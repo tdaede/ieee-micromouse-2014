@@ -32,6 +32,22 @@ void setup()
 #define MOTOR_RIGHT 1
 #define MOTOR_ACCELERATION_RATE 20
 
+void sendPulse()
+{
+    char i;
+    for(i = 0; i < 24; i++)
+    {
+        digitalWrite(R_IR, LOW); // set right IR LED on
+        digitalWrite(L_IR, LOW);
+        delayMicroseconds(8);
+        digitalWrite(R_IR, HIGH); // set right IR LED off
+        digitalWrite(L_IR, HIGH);
+        delayMicroseconds(8);
+    }
+    digitalWrite(LED_RED,!digitalRead(IR_IN));
+    delay(10);
+}
+
 void motorSet(int motor, int motorSpeed) {
   int velocity;
   dir_t dir = FORWARD;
@@ -80,9 +96,9 @@ void motorBrake(unsigned char left, unsigned char right) {
 int cycleCount = 0;
 
 void loop() {
-  float* r;
+  float r[5];
   int line[5];
-  r = robot.getReflectivity();
+  robot.getReflectivity(r);
   int i;
   for(i = 0; i < 5; i++) {
     line[i] = r[i] < IR_THRESHOLD;
@@ -125,7 +141,12 @@ void loop() {
     digitalWrite(LED_GREEN,LOW);
   }
   if (state == STATE_GRIDCROSS) {
-    motorBrake(127,127);
+    if (cycleCount > 100) {
+      motorBrake(127,127);
+    } else {
+      motorSet(MOTOR_LEFT,MAX_VELOCITY);
+      motorSet(MOTOR_RIGHT,MAX_VELOCITY);
+    }
     cycleCount++;
     digitalWrite(LED_RED,HIGH);
     digitalWrite(LED_GREEN,LOW);
