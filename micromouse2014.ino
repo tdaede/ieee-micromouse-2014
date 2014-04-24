@@ -3,7 +3,7 @@
 
 DFRobot2WD robot = DFRobot2WD();
 
-#define IR_THRESHOLD 3.5f
+#define IR_THRESHOLD 2.0f
 #define IR_DEBUG 0
 
 
@@ -103,7 +103,7 @@ void loop() {
   robot.getReflectivity(r);
   int i;
   for(i = 0; i < 5; i++) {
-    line[i] = r[i] < IR_THRESHOLD;
+    line[i] = r[i] > IR_THRESHOLD;
 #if IR_DEBUG
     Serial.print(r[i]);
     Serial.print(' ');
@@ -113,11 +113,7 @@ void loop() {
   Serial.print('\n');
 #endif
   if (state == STATE_LINEFOLLOW) {
-    if (line[2]) {
-      // go straight
-      motorSet(MOTOR_LEFT,MAX_VELOCITY);
-      motorSet(MOTOR_RIGHT,MAX_VELOCITY);
-    } else if (line[0]) {
+    if (line[0]) {
       // line is far to the left
       motorSet(MOTOR_RIGHT,MOTOR_HARD_TURN);
       motorSet(MOTOR_LEFT,-1*MOTOR_HARD_TURN);
@@ -133,6 +129,10 @@ void loop() {
       // line is slightly to the left
       motorSet(MOTOR_RIGHT,1*MAX_VELOCITY);
       motorSet(MOTOR_LEFT,MOTOR_SLIGHT_TURN);
+    } else if (line[2]) {
+      // go straight
+      motorSet(MOTOR_LEFT,MAX_VELOCITY);
+      motorSet(MOTOR_RIGHT,MAX_VELOCITY);
     } else {
       //lost the line
       robot.motorControl(FORWARD,0,FORWARD,0);
@@ -147,8 +147,8 @@ void loop() {
     digitalWrite(LED_GREEN,LOW);
   }
   if (state == STATE_GRIDCROSS) {
-    if (cycleCount > 100) {
-      motorBrake(127,127);
+    if (cycleCount > 80) {
+      motorBrake(192,192);
     } else {
       motorSet(MOTOR_LEFT,MAX_VELOCITY);
       motorSet(MOTOR_RIGHT,MAX_VELOCITY);
