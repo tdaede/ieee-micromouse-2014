@@ -35,37 +35,34 @@ int decideTurn;
 
 char grid[32][32];
 
-#define C_FWD 1
-#define C_TRN 2
-#define C_END 0
+#define CF 1
+#define CR 2
+#define CL 3
+#define CEND 0
+
+
 
 int cheatIndex = 0;
 
 char cheat[] = {
-  C_TRN,
-  C_FWD,
-  C_FWD,
-  C_TRN,
-  C_TRN,
-  C_TRN,
-  C_FWD,
-  C_TRN,
-  C_FWD,
-  C_FWD,
-  C_TRN,
-  C_FWD,
-  C_TRN,
-  C_FWD,
-  C_TRN,
-  C_TRN,
-  C_TRN,
-  C_FWD,
-  C_TRN,
-  C_TRN,
-  C_TRN,
-  C_FWD,
-  C_FWD,
-  C_END
+  CR,
+  CF,
+  CF,
+  CL,
+  CF,
+  CR,
+  CF,
+  CF,
+  CR,
+  CF,
+  CR,
+  CF,
+  CL,
+  CF,
+  CL,
+  CF,
+  CF,
+  CEND
 };
 
 void setup()
@@ -238,9 +235,11 @@ void loop() {
     if (!decideTurn) {
       decideTurn = random(100) < (100 - 100/(grid[newx][newy]+1));
     }
-    if (cheat[cheatIndex] != C_END) {
-      if (cheat[cheatIndex] == C_TRN) decideTurn = 1;
-      if (cheat[cheatIndex] == C_FWD) decideTurn = 0;
+    if (cheat[cheatIndex] != CEND) {
+      if (cheat[cheatIndex] == CR) decideTurn = 1;
+      if (cheat[cheatIndex] == CL) decideTurn = 2; 
+      if (cheat[cheatIndex] == CF) decideTurn = 0;
+      cheatIndex++;
     }
     if (decideTurn) {
       state = STATE_ROTATING_OUT;
@@ -279,12 +278,16 @@ void loop() {
         Serial.print("\n");
       }
       */
-      cheatIndex++;
     }
   }
   if (state == STATE_ROTATING_OUT) {
-    robot.motorLeft(FORWARD,MAX_VELOCITY_ROTATE);
-    robot.motorRight(BACKWARD,MAX_VELOCITY_ROTATE);
+    if (decideTurn == 2) {
+      robot.motorRight(FORWARD,MAX_VELOCITY_ROTATE);
+      robot.motorLeft(BACKWARD,MAX_VELOCITY_ROTATE);
+    } else {
+      robot.motorLeft(FORWARD,MAX_VELOCITY_ROTATE);
+      robot.motorRight(BACKWARD,MAX_VELOCITY_ROTATE);
+    }
     //motorSet(MOTOR_LEFT,MAX_VELOCITY_ROTATE);
     //motorSet(MOTOR_RIGHT,-1*MAX_VELOCITY_ROTATE);
     digitalWrite(LED_RED,LOW);
@@ -296,8 +299,13 @@ void loop() {
     }    
   }
   if (state == STATE_ROTATING_IN) {
-    robot.motorLeft(FORWARD,MAX_VELOCITY_ROTATE);
-    robot.motorRight(BACKWARD,MAX_VELOCITY_ROTATE);
+    if (decideTurn == 2) {
+      robot.motorRight(FORWARD,MAX_VELOCITY_ROTATE);
+      robot.motorLeft(BACKWARD,MAX_VELOCITY_ROTATE);
+    } else {
+      robot.motorLeft(FORWARD,MAX_VELOCITY_ROTATE);
+      robot.motorRight(BACKWARD,MAX_VELOCITY_ROTATE);
+    }
     digitalWrite(LED_RED,HIGH);
     digitalWrite(LED_GREEN,LOW);
     cycleCount++;
