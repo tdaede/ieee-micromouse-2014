@@ -3,13 +3,15 @@
 
 DFRobot2WD robot = DFRobot2WD();
 
-#define IR_THRESHOLD 2.5f
+#define IR_THRESHOLD 3.5f
+#define IR_DEBUG 0
 
 
 #define STATE_LINEFOLLOW 0
 #define STATE_GRIDCROSS 1
 #define STATE_ROTATING_OUT 2
 #define STATE_ROTATING_IN 3
+#define STATE_SCAN 4
 
 int state = STATE_LINEFOLLOW;
 
@@ -44,8 +46,6 @@ void sendPulse()
         digitalWrite(L_IR, HIGH);
         delayMicroseconds(8);
     }
-    digitalWrite(LED_RED,!digitalRead(IR_IN));
-    delay(10);
 }
 
 void motorSet(int motor, int motorSpeed) {
@@ -75,6 +75,8 @@ void motorSet(int motor, int motorSpeed) {
 
 void motorBrake(unsigned char left, unsigned char right) {
   static int c;
+  motor_velocity[0] = 0;
+  motor_velocity[1] = 0;
   if (c&1) {
     if (left > 0) {
       robot.motorLeft(FORWARD,left);
@@ -102,10 +104,14 @@ void loop() {
   int i;
   for(i = 0; i < 5; i++) {
     line[i] = r[i] < IR_THRESHOLD;
-    //Serial.print(r[i]);
-    //Serial.print(' ');
+#if IR_DEBUG
+    Serial.print(r[i]);
+    Serial.print(' ');
+#endif
   }
-  //Serial.print('\n');
+#if IR_DEBUG
+  Serial.print('\n');
+#endif
   if (state == STATE_LINEFOLLOW) {
     if (line[2]) {
       // go straight
@@ -151,8 +157,18 @@ void loop() {
     digitalWrite(LED_RED,HIGH);
     digitalWrite(LED_GREEN,LOW);
     if (cycleCount > 1000) {
-      state = STATE_ROTATING_OUT;
+      state = STATE_SCAN;
       cycleCount = 0;
+    }
+  }
+  if (state == STATE_SCAN) {
+    motorSet(MOTOR_LEFT,0);
+    motorSet(MOTOR_RIGHT,0);
+    sendPulse();
+    if (!digitalRead(IR_IN)) {
+      state = STATE_ROTATING_OUT;
+    } else {
+      state = STATE_LINEFOLLOW;
     }
   }
   if (state == STATE_ROTATING_OUT) {
@@ -177,7 +193,7 @@ void loop() {
     if (line[2]) {
       motorSet(MOTOR_LEFT,0);
       motorSet(MOTOR_RIGHT,0);
-      state = STATE_LINEFOLLOW;
+      state = STATE_SCAN;
     }
   }
 }
