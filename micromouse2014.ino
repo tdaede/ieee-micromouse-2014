@@ -6,7 +6,7 @@ DFRobot2WD robot = DFRobot2WD();
 #define IR_THRESHOLD 2.0f
 #define IR_DEBUG 0
 
-#define GRIDCROSS_PAUSE 1000
+#define GRIDCROSS_PAUSE 250
 
 
 #define STATE_LINEFOLLOW 0
@@ -40,24 +40,22 @@ char grid[32][32];
 #define CL 3
 #define CEND 0
 
-
-
 int cheatIndex = 0;
 
 char cheat1[] = {
-  CR,
-  CF,
-  CF,
-  CL,
-  CF,
-  CR,
-  CF,
   CF,
   CR,
   CF,
   CR,
   CF,
   CL,
+  CF,
+  CF,
+  CF,
+  CL,
+  CF,
+  CF,
+  CR,
   CF,
   CL,
   CF,
@@ -66,13 +64,6 @@ char cheat1[] = {
 };
 
 char cheat2[] = {
-  CR,
-  CF,
-  CF,
-  CL,
-  CF,
-  CR,
-  CF,
   CF,
   CR,
   CF,
@@ -82,38 +73,38 @@ char cheat2[] = {
   CF,
   CL,
   CF,
+  CF,
+  CF,
+  CR,
+  CF,
+  CF,
+  CL,
+  CF,
+  CR,
   CF,
   CEND
 };
 
 char cheat3[] = {
+  CF,
+  CF,
+  CF,
+  CF,
   CR,
   CF,
+  CF,
+  CF,
+  CF,
+  CR,
   CF,
   CL,
   CF,
-  CR,
-  CF,
-  CF,
-  CR,
-  CF,
-  CR,
-  CF,
   CL,
-  CF,
-  CL,
-  CF,
   CF,
   CEND
 };
 
 char cheat4[] = {
-  CR,
-  CF,
-  CF,
-  CL,
-  CF,
-  CR,
   CF,
   CF,
   CR,
@@ -122,8 +113,15 @@ char cheat4[] = {
   CF,
   CL,
   CF,
+  CF,
   CL,
   CF,
+  CR,
+  CF,
+  CL,
+  CF,
+  CF,
+  CR,
   CF,
   CEND
 };
@@ -133,6 +131,7 @@ char * cheat;
 void setup()
 {
   Serial.begin(9600);
+  tone(11, 440, 100);
   while(!robot.getKeyOne()){ // if press 2 => state 1
     if(robot.getKeyTwo()) {
       cheat = cheat1;
@@ -153,7 +152,7 @@ void setup()
       Serial.println("State 3");
       break;
     }
-    if(robot.getKeyThree()){ // if press 2,3 => state 4
+    if(robot.getKeyThree()){ // if press 1,3 => state 4
       cheat = cheat4;
       Serial.println("State 4");
       break;
@@ -333,6 +332,10 @@ void loop() {
       if (cheat[cheatIndex] == CL) decideTurn = 2; 
       if (cheat[cheatIndex] == CF) decideTurn = 0;
       cheatIndex++;
+    }
+    else{
+      motorSet(MOTOR_LEFT,0);
+      motorSet(MOTOR_RIGHT,0);
     }
     if (decideTurn) {
       state = STATE_ROTATING_OUT;
