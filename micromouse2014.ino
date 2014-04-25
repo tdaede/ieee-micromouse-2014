@@ -6,7 +6,7 @@ DFRobot2WD robot = DFRobot2WD();
 #define IR_THRESHOLD 2.0f
 #define IR_DEBUG 0
 
-#define GRIDCROSS_PAUSE 250
+#define GRIDCROSS_PAUSE 2
 
 
 #define STATE_LINEFOLLOW 0
@@ -131,7 +131,6 @@ char * cheat;
 void setup()
 {
   Serial.begin(9600);
-  tone(11, 440, 100);
   while(!robot.getKeyOne()){ // if press 2 => state 1
     if(robot.getKeyTwo()) {
       cheat = cheat1;
@@ -332,10 +331,6 @@ void loop() {
       if (cheat[cheatIndex] == CL) decideTurn = 2; 
       if (cheat[cheatIndex] == CF) decideTurn = 0;
       cheatIndex++;
-    }
-    else{
-      motorSet(MOTOR_LEFT,0);
-      motorSet(MOTOR_RIGHT,0);
     }
     if (decideTurn) {
       state = STATE_ROTATING_OUT;
